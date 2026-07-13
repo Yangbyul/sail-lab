@@ -47,6 +47,17 @@ h2 { font-size:1.6rem; font-weight:700; letter-spacing:-0.03em; margin-bottom:2r
 .p-role { font-size:0.78rem; color:var(--muted); margin-top:9px; line-height:1.55; }
 .p-cmd { margin-top:9px; }
 .p-cmd code { background:var(--bg); border:1px solid var(--border); border-radius:6px; padding:2px 9px; font-size:0.75rem; color:var(--text); }
+.person.lead .avatar { width:64px; height:64px; font-size:31px; border-width:2.5px; }
+.person.lead .p-title { font-size:1.08rem; }
+.person.member { padding:0.85rem 0.75rem 0.8rem; background:color-mix(in srgb, var(--card) 62%, var(--bg)); }
+.member .avatar { width:36px; height:36px; font-size:18px; border-width:1.5px; margin-bottom:6px; }
+.member .p-title { font-size:0.84rem; }
+.member .p-agent { font-size:0.63rem; }
+.member .p-chips { margin-top:5px; } .member .chip { font-size:0.62rem; padding:1px 7px; }
+.member .p-role { font-size:0.7rem; margin-top:6px; }
+.member .p-cmd { margin-top:6px; } .member .p-cmd code { font-size:0.66rem; padding:1px 7px; }
+.members { display:flex; flex-direction:column; gap:9px; width:90%; align-self:center; }
+.sub-line { width:1px; height:14px; background:var(--border); align-self:center; margin:-2px 0; }
 .vline { width:1px; height:28px; background:var(--border); }
 .teams { display:grid; grid-template-columns:repeat(7,1fr); gap:13px; width:100%; position:relative; padding-top:28px; }
 .teams::before { content:""; position:absolute; top:0; left:7.14%; right:7.14%; height:1px; background:var(--border); }
@@ -61,6 +72,13 @@ h2 { font-size:1.6rem; font-weight:700; letter-spacing:-0.03em; margin-bottom:2r
 .t-methods .team-label { color:var(--orange); } .t-methods .avatar { border-color:var(--orange); }
 .t-proposal .team-label { color:var(--teal); }  .t-proposal .avatar { border-color:var(--teal); }
 .t-admin .team-label { color:var(--idea); }     .t-admin .avatar { border-color:var(--idea); }
+.t-writing .person.lead { border-color:color-mix(in srgb, var(--work) 55%, var(--border)); box-shadow:0 4px 22px color-mix(in srgb, var(--work) 14%, transparent); }
+.t-lit .person.lead { border-color:color-mix(in srgb, var(--done) 55%, var(--border)); box-shadow:0 4px 22px color-mix(in srgb, var(--done) 14%, transparent); }
+.t-plan .person.lead { border-color:color-mix(in srgb, var(--review) 55%, var(--border)); box-shadow:0 4px 22px color-mix(in srgb, var(--review) 14%, transparent); }
+.t-review .person.lead { border-color:color-mix(in srgb, var(--prep) 55%, var(--border)); box-shadow:0 4px 22px color-mix(in srgb, var(--prep) 14%, transparent); }
+.t-methods .person.lead { border-color:color-mix(in srgb, var(--orange) 55%, var(--border)); box-shadow:0 4px 22px color-mix(in srgb, var(--orange) 14%, transparent); }
+.t-proposal .person.lead { border-color:color-mix(in srgb, var(--teal) 55%, var(--border)); box-shadow:0 4px 22px color-mix(in srgb, var(--teal) 14%, transparent); }
+.t-admin .person.lead { border-color:color-mix(in srgb, var(--idea) 55%, var(--border)); box-shadow:0 4px 22px color-mix(in srgb, var(--idea) 14%, transparent); }
 .rules { display:grid; grid-template-columns:repeat(auto-fit,minmax(240px,1fr)); gap:1rem; }
 .rule { background:var(--card); border:1px solid var(--border); border-radius:12px; padding:1.3rem; font-size:0.84rem; color:var(--muted); transition:all 0.3s; }
 .rule:hover { border-color:var(--work); transform:translateY(-2px); }
@@ -86,7 +104,7 @@ footer { text-align:center; color:var(--muted); font-size:0.8rem; padding:2.5rem
 </div>
 <div class="stats-bar">
   <div class="stat"><div class="num" style="color:var(--work)">7</div><div class="label">Teams</div></div>
-  <div class="stat"><div class="num" style="color:var(--prep)">13</div><div class="label">AI Agents</div></div>
+  <div class="stat"><div class="num" style="color:var(--prep)">15</div><div class="label">AI Agents</div></div>
   <div class="stat"><div class="num" style="color:var(--done)">41</div><div class="label">Knowledge Base</div></div>
   <div class="stat"><div class="num" style="color:var(--orange)">10</div><div class="label">Manuscripts</div></div>
 </div>
@@ -112,116 +130,130 @@ footer { text-align:center; color:var(--muted); font-size:0.8rem; padding:2.5rem
   <div class="vline"></div>
   <div class="teams"><div class="col t-writing">
       <div class="team-label">✍️ 집필팀<span class="team-en">Writing & Editing</span></div>
-      <div class="person">
+      <div class="person lead">
       <div class="avatar">✒️</div>
       <div class="p-title">집필팀장</div>
       <div class="p-agent">랩장 겸직</div>
       <div class="p-chips"><span class="chip">팀장</span><span class="chip">메인 세션</span></div>
       <div class="p-role">첨삭·집필을 직접 맡는다. 문체의 일관성은 나눠 맡길 수 없다.</div>
       <div class="p-cmd"><code>/첨삭</code></div>
-    </div><div class="person">
+    </div><div class="sub-line"></div><div class="members"><div class="person member">
       <div class="avatar">🪶</div>
       <div class="p-title">교정 담당</div>
       <div class="p-agent">proof-ra</div>
       <div class="p-chips"><span class="chip">팀원</span><span class="chip m-sonnet">sonnet</span></div>
       <div class="p-role">투고 직전, AI 문체 지문을 걷어내고 저자 본연의 문장으로 되돌린다.</div>
       <div class="p-cmd"><code>/교정</code></div>
-    </div>
+    </div></div>
     </div><div class="col t-lit">
       <div class="team-label">📚 문헌팀<span class="team-en">Knowledge & Citations</span></div>
-      <div class="person">
+      <div class="person lead">
       <div class="avatar">🗂️</div>
       <div class="p-title">문헌팀장</div>
       <div class="p-agent">literature-lead</div>
       <div class="p-chips"><span class="chip">팀장</span><span class="chip m-sonnet">sonnet</span></div>
       <div class="p-role">지식베이스(corpus·profile)의 품질을 책임지고 검증 결과를 종합한다.</div>
       <div class="p-cmd"><code>/갱신</code></div>
-    </div><div class="person">
+    </div><div class="sub-line"></div><div class="members"><div class="person member">
       <div class="avatar">🔎</div>
       <div class="p-title">인용 검증</div>
       <div class="p-agent">citation-ra</div>
       <div class="p-chips"><span class="chip">팀원 ×N</span><span class="chip m-sonnet">sonnet</span></div>
       <div class="p-role">배정받은 문헌의 실존·서지정보·원문 일치를 병렬로 검증한다.</div>
       <div class="p-cmd"><code>/인용검증</code></div>
-    </div><div class="person">
+    </div><div class="person member">
       <div class="avatar">🎯</div>
       <div class="p-title">인용 적정성</div>
       <div class="p-agent">citation-fit-ra</div>
       <div class="p-chips"><span class="chip">팀원</span><span class="chip m-opus">opus</span></div>
       <div class="p-role">이 주장의 근거로 이 문헌이 최선인가 — 대안·누락 문헌까지 본다.</div>
       <div class="p-cmd"><code>/인용검증</code></div>
-    </div>
+    </div></div>
     </div><div class="col t-plan">
       <div class="team-label">🧭 기획팀<span class="team-en">Research Strategy</span></div>
-      <div class="person">
+      <div class="person lead">
       <div class="avatar">🧠</div>
       <div class="p-title">기획팀장</div>
       <div class="p-agent">strategy-lead</div>
       <div class="p-chips"><span class="chip">팀장</span><span class="chip m-opus">opus</span></div>
       <div class="p-role">탐색 보고를 평가해 다음 연구주제를 제안한다. 제안은 넓게, 추천은 좁게.</div>
       <div class="p-cmd"><code>/확장</code></div>
-    </div><div class="person">
+    </div><div class="sub-line"></div><div class="members"><div class="person member">
       <div class="avatar">🔭</div>
       <div class="p-title">동향 스카우트</div>
       <div class="p-agent">scout-ra</div>
       <div class="p-chips"><span class="chip">팀원 ×N</span><span class="chip m-sonnet">sonnet</span></div>
       <div class="p-role">배정받은 방향 하나의 최신 동향을 검색으로 깊게 탐색한다.</div>
       <div class="p-cmd"><code>/확장</code></div>
-    </div>
+    </div></div>
     </div><div class="col t-review">
       <div class="team-label">⚖️ 심사팀<span class="team-en">Internal Review</span></div>
-      <div class="person">
+      <div class="person lead">
       <div class="avatar">🧑‍⚖️</div>
       <div class="p-title">편집장</div>
       <div class="p-agent">review-editor</div>
       <div class="p-chips"><span class="chip">팀장</span><span class="chip m-opus">opus</span></div>
       <div class="p-role">3인의 독립 심사를 대조·종합해 판정과 대응 우선순위를 정한다.</div>
       <div class="p-cmd"><code>/심사</code></div>
-    </div><div class="person">
+    </div><div class="sub-line"></div><div class="members"><div class="person member">
       <div class="avatar">🧐</div>
       <div class="p-title">심사위원</div>
       <div class="p-agent">reviewer-ra</div>
       <div class="p-chips"><span class="chip">팀원 ×3</span><span class="chip m-opus">opus</span></div>
       <div class="p-role">방법론·이론·명료성의 세 눈으로, 서로 모르게 독립 심사한다.</div>
       <div class="p-cmd"><code>/심사</code></div>
-    </div>
+    </div></div>
     </div><div class="col t-methods">
       <div class="team-label">📐 방법론팀<span class="team-en">Methods & Stats</span></div>
-      <div class="person">
+      <div class="person lead">
       <div class="avatar">📊</div>
       <div class="p-title">방법론팀장</div>
       <div class="p-agent">methods-lead</div>
       <div class="p-chips"><span class="chip">팀장</span><span class="chip m-opus">opus</span></div>
-      <div class="p-role">심사위원보다 먼저 통계 결함을 잡는다. 코드는 실제로 실행한다.</div>
+      <div class="p-role">심사위원보다 먼저 통계 결함을 잡는다. 실행 결과를 검증하고 해석한다.</div>
       <div class="p-cmd"><code>/분석</code></div>
-    </div>
+    </div><div class="sub-line"></div><div class="members"><div class="person member">
+      <div class="avatar">⌨️</div>
+      <div class="p-title">분석 실행</div>
+      <div class="p-agent">analysis-ra</div>
+      <div class="p-chips"><span class="chip">팀원</span><span class="chip m-sonnet">sonnet</span></div>
+      <div class="p-role">분석 코드를 짜서 실제로 돌린다. 수치와 사실만 보고한다.</div>
+      <div class="p-cmd"><code>/분석</code></div>
+    </div></div>
     </div><div class="col t-proposal">
       <div class="team-label">📝 과제기획팀<span class="team-en">Proposals & IRB</span></div>
-      <div class="person">
+      <div class="person lead">
       <div class="avatar">🖊️</div>
       <div class="p-title">과제기획팀장</div>
       <div class="p-agent">proposal-lead</div>
       <div class="p-chips"><span class="chip">팀장</span><span class="chip m-opus">opus</span></div>
       <div class="p-role">공고 요건을 체크하고 제안서를 쓴다. 실적은 실재하는 것만.</div>
       <div class="p-cmd"><code>/제안서</code></div>
-    </div><div class="person">
+    </div><div class="sub-line"></div><div class="members"><div class="person member">
       <div class="avatar">🛡️</div>
       <div class="p-title">IRB 담당</div>
       <div class="p-agent">irb-ra</div>
       <div class="p-chips"><span class="chip">팀원</span><span class="chip m-sonnet">sonnet</span></div>
       <div class="p-role">심의 서류 초안을 만든다. 심의 판정은 항상 행정실 확인으로 유보.</div>
       <div class="p-cmd"><code>/IRB</code></div>
-    </div>
+    </div></div>
     </div><div class="col t-admin">
       <div class="team-label">🗄️ 행정팀<span class="team-en">Post-award Admin</span></div>
-      <div class="person">
+      <div class="person lead">
       <div class="avatar">🧾</div>
       <div class="p-title">행정팀장</div>
       <div class="p-agent">admin-lead</div>
       <div class="p-chips"><span class="chip">팀장</span><span class="chip m-sonnet">sonnet</span></div>
-      <div class="p-role">결과보고서·정산 검산·출장 내역을 챙긴다. 규정은 추측하지 않는다.</div>
+      <div class="p-role">정산 검산과 마감을 총괄한다. 규정은 추측하지 않는다.</div>
       <div class="p-cmd"><code>/과제</code></div>
-    </div>
+    </div><div class="sub-line"></div><div class="members"><div class="person member">
+      <div class="avatar">📄</div>
+      <div class="p-title">서류 담당</div>
+      <div class="p-agent">docs-ra</div>
+      <div class="p-chips"><span class="chip">팀원</span><span class="chip m-sonnet">sonnet</span></div>
+      <div class="p-role">결과보고서·출장 내역표·공문 초안을 만든다. 금액은 창작하지 않는다.</div>
+      <div class="p-cmd"><code>/과제</code></div>
+    </div></div>
     </div></div>
 </div>
 
@@ -236,5 +268,5 @@ footer { text-align:center; color:var(--muted); font-size:0.8rem; padding:2.5rem
   <div class="rule">🚫 <b>지어내지 않는다</b>인용·실적·규정은 실재 확인된 것만</div>
 </div>
 </div>
-<footer>SAIL Lab · Jeju National University · <a href="https://yangbyul.github.io/eunbyul-yang/">Eunbyul Yang, Ph.D.</a> · 갱신 2026-07-13 19:51</footer>
+<footer>SAIL Lab · Jeju National University · <a href="https://yangbyul.github.io/eunbyul-yang/">Eunbyul Yang, Ph.D.</a> · 갱신 2026-07-13 23:32</footer>
 </body></html>
