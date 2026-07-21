@@ -4,7 +4,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
 <style>
 :root { --bg:#0f172a; --card:#1e293b; --border:#334155; --text:#e2e8f0; --muted:#8892a4;
-  --work:#60a5fa; --prep:#a78bfa; --review:#fbbf24; --idea:#8892a4; --done:#34d399; --teal:#22d3ee; --orange:#fb923c; }
+  --work:#60a5fa; --prep:#a78bfa; --review:#fbbf24; --idea:#8892a4; --done:#34d399; --teal:#22d3ee; --orange:#fb923c; --rose:#f472b6; }
 * { margin:0; padding:0; box-sizing:border-box; }
 body { font-family:'Inter','Noto Sans KR','Apple SD Gothic Neo',sans-serif; background:var(--bg); color:var(--text); line-height:1.6; }
 a { color:var(--work); text-decoration:none; } a:hover { text-decoration:underline; }
@@ -59,8 +59,8 @@ h2 { font-size:1.6rem; font-weight:700; letter-spacing:-0.03em; margin-bottom:2r
 .members { display:flex; flex-direction:column; gap:9px; width:90%; align-self:center; }
 .sub-line { width:1px; height:14px; background:var(--border); align-self:center; margin:-2px 0; }
 .vline { width:1px; height:28px; background:var(--border); }
-.teams { display:grid; grid-template-columns:repeat(7,1fr); gap:13px; width:100%; position:relative; padding-top:28px; }
-.teams::before { content:""; position:absolute; top:0; left:7.14%; right:7.14%; height:1px; background:var(--border); }
+.teams { display:grid; grid-template-columns:repeat(8,1fr); gap:13px; width:100%; position:relative; padding-top:28px; }
+.teams::before { content:""; position:absolute; top:0; left:6.25%; right:6.25%; height:1px; background:var(--border); }
 .col { position:relative; display:flex; flex-direction:column; gap:11px; }
 .col::before { content:""; position:absolute; top:-28px; left:50%; transform:translateX(-50%); width:1px; height:28px; background:var(--border); }
 .team-label { text-align:center; font-weight:700; font-size:0.92rem; }
@@ -72,6 +72,7 @@ h2 { font-size:1.6rem; font-weight:700; letter-spacing:-0.03em; margin-bottom:2r
 .t-methods .team-label { color:var(--orange); } .t-methods .avatar { border-color:var(--orange); }
 .t-proposal .team-label { color:var(--teal); }  .t-proposal .avatar { border-color:var(--teal); }
 .t-admin .team-label { color:var(--idea); }     .t-admin .avatar { border-color:var(--idea); }
+.t-pub .team-label { color:var(--rose); }       .t-pub .avatar { border-color:var(--rose); }
 .t-writing .person.lead { border-color:color-mix(in srgb, var(--work) 55%, var(--border)); box-shadow:0 4px 22px color-mix(in srgb, var(--work) 14%, transparent); }
 .t-lit .person.lead { border-color:color-mix(in srgb, var(--done) 55%, var(--border)); box-shadow:0 4px 22px color-mix(in srgb, var(--done) 14%, transparent); }
 .t-plan .person.lead { border-color:color-mix(in srgb, var(--review) 55%, var(--border)); box-shadow:0 4px 22px color-mix(in srgb, var(--review) 14%, transparent); }
@@ -79,6 +80,7 @@ h2 { font-size:1.6rem; font-weight:700; letter-spacing:-0.03em; margin-bottom:2r
 .t-methods .person.lead { border-color:color-mix(in srgb, var(--orange) 55%, var(--border)); box-shadow:0 4px 22px color-mix(in srgb, var(--orange) 14%, transparent); }
 .t-proposal .person.lead { border-color:color-mix(in srgb, var(--teal) 55%, var(--border)); box-shadow:0 4px 22px color-mix(in srgb, var(--teal) 14%, transparent); }
 .t-admin .person.lead { border-color:color-mix(in srgb, var(--idea) 55%, var(--border)); box-shadow:0 4px 22px color-mix(in srgb, var(--idea) 14%, transparent); }
+.t-pub .person.lead { border-color:color-mix(in srgb, var(--rose) 55%, var(--border)); box-shadow:0 4px 22px color-mix(in srgb, var(--rose) 14%, transparent); }
 .rules { display:grid; grid-template-columns:repeat(auto-fit,minmax(240px,1fr)); gap:1rem; }
 .rule { background:var(--card); border:1px solid var(--border); border-radius:12px; padding:1.3rem; font-size:0.84rem; color:var(--muted); transition:all 0.3s; }
 .rule:hover { border-color:var(--work); transform:translateY(-2px); }
@@ -103,7 +105,7 @@ footer { text-align:center; color:var(--muted); font-size:0.8rem; padding:2.5rem
   <div class="hero-tags"><span>XR / Metaverse</span><span>Spatial Computing</span><span>AI in Education</span><span>Multimodal Learning Analytics</span><span>Teaching Simulation</span></div>
 </div>
 <div class="stats-bar">
-  <div class="stat"><div class="num" style="color:var(--work)">7</div><div class="label">Teams</div></div>
+  <div class="stat"><div class="num" style="color:var(--work)">8</div><div class="label">Teams</div></div>
   <div class="stat"><div class="num" style="color:var(--prep)">15</div><div class="label">AI Agents</div></div>
   <div class="stat"><div class="num" style="color:var(--done)">41</div><div class="label">Knowledge Base</div></div>
   <div class="stat"><div class="num" style="color:var(--orange)">10</div><div class="label">Manuscripts</div></div>
@@ -254,6 +256,16 @@ footer { text-align:center; color:var(--muted); font-size:0.8rem; padding:2.5rem
       <div class="p-role">결과보고서·출장 내역표·공문 초안을 만든다. 금액은 창작하지 않는다.</div>
       <div class="p-cmd"><code>/과제</code></div>
     </div></div>
+    </div><div class="col t-pub">
+      <div class="team-label">🌐 실적관리팀<span class="team-en">Publications & Web</span></div>
+      <div class="person lead">
+      <div class="avatar">🏛️</div>
+      <div class="p-title">실적관리팀장</div>
+      <div class="p-agent">랩장 겸직</div>
+      <div class="p-chips"><span class="chip">팀장</span><span class="chip">메인 세션</span></div>
+      <div class="p-role">새 논문·발표를 개인 홈페이지와 연구 대시보드에 반영한다. CV가 단일 원본이다.</div>
+      <div class="p-cmd"><code>/실적</code></div>
+    </div>
     </div></div>
 </div>
 
@@ -268,5 +280,5 @@ footer { text-align:center; color:var(--muted); font-size:0.8rem; padding:2.5rem
   <div class="rule">🚫 <b>지어내지 않는다</b>인용·실적·규정은 실재 확인된 것만</div>
 </div>
 </div>
-<footer>SAIL Lab · Jeju National University · <a href="https://yangbyul.github.io/eunbyul-yang/">Eunbyul Yang, Ph.D.</a> · 갱신 2026-07-13 23:32</footer>
+<footer>SAIL Lab · Jeju National University · <a href="https://yangbyul.github.io/eunbyul-yang/">Eunbyul Yang, Ph.D.</a> · 갱신 2026-07-21 23:40</footer>
 </body></html>
