@@ -65,6 +65,14 @@ a { color:var(--blue); text-decoration:none; } a:hover { text-decoration:underli
 .r-cmd { color:var(--cyan); font-size:0.74rem; }
 .r-agent { color:var(--dim); font-size:0.72rem; margin-left:1.55rem; }
 .r-role { color:var(--dim); font-size:0.76rem; margin-left:1.55rem; margin-top:1px; }
+.orgtree { white-space:pre; overflow-x:auto; line-height:2.05; font-size:0.88rem; color:var(--dim);
+  border:1px solid var(--border); border-radius:6px; background:var(--panel2); padding:1rem 1.3rem; }
+.og-pi { color:var(--amber); font-weight:700; }
+.og-head { color:var(--green); font-weight:700; }
+.og-div { color:var(--text); font-weight:700; font-size:0.95rem; }
+.og-team { font-weight:600; }
+.og-n { color:var(--cyan); }
+.og-dim { color:var(--dim); font-size:0.76rem; }
 .rules { list-style:none; counter-reset:rule; max-width:760px; }
 .rules li { counter-increment:rule; padding:0.65rem 0; border-bottom:1px dotted #16211c; }
 .rules li::before { content:counter(rule,decimal-leading-zero) "  "; color:var(--green); font-weight:700; }
@@ -83,6 +91,7 @@ a { color:var(--blue); text-decoration:none; } a:hover { text-decoration:underli
     <span class="tb-title">sail-lab — EUNBYUL</span></div>
   <div class="tabs">
     <button class="tab active" data-t="overview">overview</button>
+    <button class="tab" data-t="org">org-chart</button>
     <button class="tab" data-t="members">members</button>
     <button class="tab" data-t="principles">principles</button>
     <a class="tab ext" href="https://yangbyul.github.io/eunbyul-yang/">pi-homepage ↗</a>
@@ -104,7 +113,28 @@ a { color:var(--blue); text-decoration:none; } a:hover { text-decoration:underli
       <div class="stat"><div class="num">41</div><div class="lbl">knowledge base</div></div>
       <div class="stat"><div class="num">10</div><div class="lbl">manuscripts</div></div>
     </div>
-    <div class="hint-line"># 구성원·역할은 [members] 탭, 운영 원칙은 [principles] 탭에서</div>
+    <div class="hint-line"># 조직도는 [org-chart] 탭, 구성원·역할은 [members] 탭, 운영 원칙은 [principles] 탭에서</div>
+  </div>
+
+  <div class="panel" id="p-org">
+    <div class="prompt"><span class="u">EUNBYUL</span>:<span class="path">~/sail-lab</span>$ <span class="c">sail --org</span></div>
+    <div class="orgtree"><span class="og-pi">👩‍🏫 PI — 양은별 교수</span><span class="og-dim">  principal investigator · 모든 최종 결정</span>
+└─ <span class="og-head">🧑‍💼 랩장</span><span class="og-dim">  main session · 작업 분해 → 팀 배정 → 종합 보고</span>
+    ├─ <span class="og-div">📝 논문작성부</span><span class="og-dim">  paper-writing · 5 teams</span>
+    │    ├─ <span class="og-team" style="color:#60a5fa">✍️ 교정팀</span> <span class="og-n">2명</span><span class="og-dim">  교정팀장 · 교정 담당</span>
+    │    ├─ <span class="og-team" style="color:#34d399">📚 문헌팀</span> <span class="og-n">3명+</span><span class="og-dim">  문헌팀장 · 인용 검증 ×N · 인용 적정성</span>
+    │    ├─ <span class="og-team" style="color:#fbbf24">🧭 기획팀</span> <span class="og-n">2명+</span><span class="og-dim">  기획팀장 · 동향 스카우트 ×N</span>
+    │    ├─ <span class="og-team" style="color:#c084fc">🥊 모의심사팀</span> <span class="og-n">4명</span><span class="og-dim">  편집장 · 심사위원 ×3</span>
+    │    └─ <span class="og-team" style="color:#fb923c">📐 방법론팀</span> <span class="og-n">2명</span><span class="og-dim">  방법론팀장 · 분석 실행</span>
+    ├─ <span class="og-div">🏛️ 연구행정부</span><span class="og-dim">  research-admin · 3 teams</span>
+    │    ├─ <span class="og-team" style="color:#22d3ee">📝 과제기획팀</span> <span class="og-n">2명</span><span class="og-dim">  과제기획팀장 · IRB 담당</span>
+    │    ├─ <span class="og-team" style="color:#94a3b8">🗄️ 행정팀</span> <span class="og-n">2명</span><span class="og-dim">  행정팀장 · 서류 담당</span>
+    │    └─ <span class="og-team" style="color:#f472b6">🌐 실적관리팀</span> <span class="og-n">1명</span><span class="og-dim">  실적관리팀장</span>
+    ├─ <span class="og-div">🎓 교육지원부</span><span class="og-dim">  teaching-assistant · 1 team</span>
+    │    └─ <span class="og-team" style="color:#a3e635">🎓 TA팀</span> <span class="og-n">4명+</span><span class="og-dim">  TA팀장 · 자료 담당 · 출제 담당 · 채점 담당 ×N</span>
+    └─ <span class="og-div">⚖️ 학술심사부</span><span class="og-dim">  peer-review · 1 team</span>
+         └─ <span class="og-team" style="color:#e879f9">⚖️ 외부심사팀</span> <span class="og-n">3명</span><span class="og-dim">  외부심사팀장 · 원고 분석 · 문헌 확인</span></div>
+    <div class="hint-line"># 구성원별 세부 역할·담당 명령은 [members] 탭에서</div>
   </div>
 
   <div class="panel" id="p-members">
@@ -134,7 +164,7 @@ a { color:var(--blue); text-decoration:none; } a:hover { text-decoration:underli
   </div>
   <div class="statusbar">
     <span>⛵ SAIL Lab · 4 divisions · 10 teams · 22 agents · corpus 41</span>
-    <span>updated 2026-07-23 22:57 · <a href="https://yangbyul.github.io/eunbyul-yang/">Eunbyul Yang, Ph.D.</a></span>
+    <span>updated 2026-07-23 23:11 · <a href="https://yangbyul.github.io/eunbyul-yang/">Eunbyul Yang, Ph.D.</a></span>
   </div>
 </div>
 <script>
