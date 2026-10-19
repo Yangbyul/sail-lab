@@ -38,6 +38,9 @@ body{margin:0;background:var(--sky,#bfe6ff);font-family:"Gowun Dodum","Malgun Go
 .car::before,.car::after{content:"";position:absolute;top:8px;bottom:6px;width:20px;background:#b9a6cf;border:2px solid #5d4b70;transition:transform .35s}
 .car::before{left:2px}.car::after{right:2px}
 .car.open::before{transform:translateX(-16px) scaleX(.2)}.car.open::after{transform:translateX(16px) scaleX(.2)}
+.mini{position:absolute;left:30px;width:30px;height:52px;border:3px solid #ff8fa3;border-radius:8px;background:rgba(255,238,241,.55);z-index:4;opacity:0;transition:opacity .2s}
+.mini::after{content:'랩장 전용';position:absolute;top:-13px;left:-6px;font-size:8px;white-space:nowrap;background:#ff8fa3;color:#fff;border-radius:4px;padding:0 3px}
+.mini.on{opacity:1}
 .car .ind{position:absolute;top:-16px;left:8px;font-size:10px;background:#222;color:#7dff9b;padding:0 4px;border-radius:3px}
 .ground{position:absolute;left:0;top:640px;width:1080px;height:36px;background:#9bd17b;border-top:4px solid #78b35a}
 /* 캐릭터 */
@@ -153,6 +156,7 @@ for (const f of [5,4,3,2,1]) {
 stage.append($(`<div class="shaft"></div>`));
 const car = $(`<div class="car" style="top:${FY[1]+6}px"><span class="ind">1F</span></div>`);
 stage.append(car);
+const mini = $(`<div class="mini"></div>`); stage.append(mini);   // 랩장 전용 미니 리프트 — 줄 안 서고 바로 탄다
 stage.append($(`<div class="ground"></div>`));
 const roomEl = {};
 for (const [k,r] of Object.entries(ROOMS)) {
@@ -228,13 +232,16 @@ class Sprite {
     this.target={f,x}; if(this.moving) return; this.moving=true;
     while(this.target){ const t=this.target; this.target=null;
       if(t.f!==this.f){
-        if(this.boss){ await this.walk(ELEV_X+6); await this.slide(t.f); }   // 랩장은 줄 안 서고 전용 봉으로 슝
+        if(this.boss){ await this.walk(ELEV_X+14); await this.slide(t.f); }   // 랩장은 줄 안 서고 전용 봉으로 슝
         else { await this.walk(ELEV_X+48+Math.random()*26); await ride(this,t.f); } }
       await this.walk(t.x); }
     this.moving=false;
   }
-  async slide(f){ const d=Math.abs(this.f-f)*0.18+0.2; this.el.style.transition=`top ${d}s ease-in-out`;
-    this.el.style.top=spriteTop(f)+'px'; await sleep(d*1000); this.f=f; }
+  async slide(f){ const d=Math.abs(this.f-f)*0.2+0.25, y=t=>spriteTop(t)-4;
+    mini.style.transition='opacity .2s'; mini.style.top=y(this.f)+'px'; mini.classList.add('on'); await sleep(220);
+    mini.style.transition=`top ${d}s ease-in-out, opacity .2s`; this.el.style.transition=`top ${d}s ease-in-out`;
+    mini.style.top=y(f)+'px'; this.el.style.top=spriteTop(f)+'px'; await sleep(d*1000); this.f=f;
+    await sleep(120); mini.classList.remove('on'); }
   say(text, ms=6000){ const b=this.el.querySelector('.bub'); b.textContent=text; b.classList.add('on');
     clearTimeout(this._t); this._t=setTimeout(()=>b.classList.remove('on'), ms); }
   async leave(live=true){ if(live){ this.say('퇴근! 👋',3000); await sleep(900); await this.go(1, ELEV_X); }
