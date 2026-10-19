@@ -57,6 +57,9 @@ body{margin:0;background:var(--sky,#bfe6ff);font-family:"Gowun Dodum","Malgun Go
 .ph .body{font-size:24px;line-height:30px;opacity:.22;filter:grayscale(1)}
 .ph .plate{font-size:8px;background:#f3e3cf;border:1px solid var(--line);border-radius:3px;padding:0 2px;white-space:nowrap;display:inline-block}
 .ph.taken{opacity:0}
+.ph.awake .body{opacity:1;filter:none;animation:bob .5s steps(2) infinite}
+.ph .bub{position:absolute;bottom:48px;left:-6px;transform:scale(0);transform-origin:bottom left;background:var(--bub);border:2px solid var(--ink);border-radius:10px;padding:2px 7px;font-size:10px;white-space:nowrap;transition:transform .2s;z-index:9}
+.ph .bub.on{transform:scale(1)}
 .mail{position:absolute;font-size:22px;z-index:8;transition:left 1.2s ease-in-out,top 1.2s ease-in-out,opacity .4s}
 /* 패널 */
 aside{flex:0 1 330px;min-width:260px;background:var(--panel);border:3px solid var(--line);border-radius:12px;padding:12px;max-height:calc(100vh - 32px);display:flex;flex-direction:column}
@@ -80,7 +83,7 @@ button:hover{background:#ffeef1}
     <h2>⛵ SAIL 오피스</h2>
     <div class="stat"><span id="s-clock">--:--</span><span id="s-staff">출근 0명</span><span id="s-today">오늘 출근 0회</span></div>
     <p class="intro">SAIL Lab(제주대 양은별 교수 연구실)은 Claude Code로 운영하는 연구 보조 팀입니다. 랩장(메인 세션)이 일을 나누어 팀원(서브에이전트)을 부르면, 팀원이 엘리베이터로 출근해 자기 팀 자리에서 일하고 끝나면 퇴근합니다.</p>
-    <div style="margin-bottom:8px"><span class="chip">🎬 시연 화면 · 다음 주 수업 준비를 자동 반복 재생</span></div>
+    <div style="margin-bottom:8px"><span class="chip">🎬 시연 화면 · 2층 수업 준비 · 3층 IRB 서류 · 4층 인용검증이 동시에 돌아갑니다</span></div>
     <ul id="log"></ul>
     <div class="legend">파일을 읽으면 📚자료실, 명령을 돌리면 🖥서버실, 웹·외부 연동은 📡통신실로 갑니다.
       팀원은 🛗엘리베이터로 출근해 자기 팀 자리에 앉고, 일이 끝나면 퇴근합니다. 쉬는 동안 랩장은 🍪휴게실에서 간식을 먹습니다. PI실은 늘 불이 켜져 있습니다.</div>
@@ -123,9 +126,10 @@ const TEAMS = [
   {room:'peer',  emo:'🦝', members:['pr-lead','ms-analyst-ra','litcheck-ra'], lead:'pr-lead'},
   {room:'ta',    emo:'🐶', members:['teaching-lead','material-ra','exam-ra','grading-ra'], lead:'teaching-lead'},
   {room:'lect',  emo:'🐼', members:['lecture-planning-ra','cqi-ra']},
-  {room:'dev',   emo:'🐙', members:['dev-lead','unity-dev','apple-dev'], lead:'dev-lead'},
+  {room:'dev',   emo:'🐙', members:['dev-lead','unity-dev','apple-dev','web-dev'], lead:'dev-lead'},
 ];
-const GUEST = {room:'lobby', emo:'🐤'};
+const GUEST = {room:'lobby', emo:'🐤', members:['codex','gemini'], emos:{codex:'🦖', gemini:'🦋'}};
+TEAMS.push(GUEST);   // 객원석: 다른 회사 AI 자문역 — 늘 앉아 있고, 부르면 깨어난다
 const TOOL = {  // 도구 → [아이콘, 동사, 랩장이 가는 방]
   Read:['📖','읽는 중','lib'], Grep:['🔍','찾는 중','lib'], Glob:['🔍','찾는 중','lib'],
   Bash:['⚙️','실행 중','server'], PowerShell:['⚙️','실행 중','server'],
@@ -174,23 +178,32 @@ function sky(){ const h=new Date().getHours(); const night = h<6||h>=19;
 sky(); setInterval(sky, 30000);
 
 // ───────── 엘리베이터 ─────────
-let carFloor = 1, liftQ = Promise.resolve();
+let carFloor = 1;
 function moveCar(f){ return new Promise(async res=>{
   if (carFloor===f) return res();
-  const d = Math.abs(carFloor-f)*0.3+0.25; car.style.transition=`top ${d}s ease-in-out`;
+  const d = Math.abs(carFloor-f)*0.22+0.2; car.style.transition=`top ${d}s ease-in-out`;
   car.style.top=(FY[f]+6)+'px'; await sleep(d*1000); carFloor=f; car.querySelector('.ind').textContent=f+'F'; res(); });}
-function ride(sp, to){
-  const job = liftQ.then(async ()=>{
-    await moveCar(sp.f); car.classList.add('open'); await sleep(220);
-    if(Math.abs(sp.x-ELEV_X)>2) await sp.walk(ELEV_X);
-    sp.el.style.opacity=.85; car.classList.remove('open'); await sleep(200);
-    const d = Math.abs(sp.f-to)*0.3+0.25;
-    sp.el.style.transition=`top ${d}s ease-in-out, opacity .6s`; car.style.transition=`top ${d}s ease-in-out`;
-    sp.el.style.top=spriteTop(to)+'px'; car.style.top=(FY[to]+6)+'px';
-    await sleep(d*1000); carFloor=to; sp.f=to; car.querySelector('.ind').textContent=to+'F';
-    car.classList.add('open'); sp.el.style.opacity=1; await sp.walk(ELEV_X+50); car.classList.remove('open');
-  });
-  liftQ = job.catch(()=>{}); return job;
+// 같은 층에서 같은 층으로 가는 사람은 한 번에 태운다 (동시 작업이 많아도 줄이 밀리지 않게)
+const liftReq=[]; let liftBusy=false;
+function ride(sp,to){ return new Promise(res=>{ liftReq.push({sp,to,res}); pump(); }); }
+async function pump(){
+  if(liftBusy) return; liftBusy=true;
+  while(liftReq.length){
+    await sleep(350);                                   // 뒤따라오는 사람을 잠깐 기다린다
+    const h=liftReq[0], from=h.sp.f, to=h.to;
+    const group=liftReq.filter(r=>r.sp.f===from && r.to===to);
+    group.forEach(r=>liftReq.splice(liftReq.indexOf(r),1));
+    await moveCar(from); car.classList.add('open'); await sleep(180);
+    await Promise.all(group.map((r,i)=>r.sp.walk(ELEV_X-10+(i%4)*7)));
+    group.forEach(r=>r.sp.el.style.opacity=.85); car.classList.remove('open'); await sleep(160);
+    const d = Math.abs(from-to)*0.22+0.2;
+    car.style.transition=`top ${d}s ease-in-out`; car.style.top=(FY[to]+6)+'px';
+    group.forEach(r=>{ r.sp.el.style.transition=`top ${d}s ease-in-out, opacity .6s`; r.sp.el.style.top=spriteTop(to)+'px'; });
+    await sleep(d*1000); carFloor=to; car.querySelector('.ind').textContent=to+'F';
+    car.classList.add('open'); group.forEach(r=>{ r.sp.f=to; r.sp.el.style.opacity=1; r.res(); });
+    await sleep(450); car.classList.remove('open');
+  }
+  liftBusy=false;
 }
 const spriteTop = f => FY[f]+112-62;
 
@@ -235,7 +248,7 @@ const KO={'proof-ra':'교정RA','literature-lead':'문헌팀장','citation-ra':'
   'methods-lead':'방법론팀장','analysis-ra':'분석RA','proposal-lead':'과제기획팀장','irb-ra':'IRB담당',
   'admin-lead':'행정팀장','docs-ra':'서류RA','pr-lead':'외부심사팀장','ms-analyst-ra':'원고분석RA','litcheck-ra':'문헌확인RA',
   'teaching-lead':'TA팀장','material-ra':'자료RA','exam-ra':'출제RA','grading-ra':'채점RA',
-  'lecture-planning-ra':'강의기획','cqi-ra':'CQI담당','dev-lead':'개발팀장','unity-dev':'Unity','apple-dev':'Apple'};
+  'lecture-planning-ra':'강의기획','cqi-ra':'CQI담당','dev-lead':'개발팀장','unity-dev':'Unity','apple-dev':'Apple','web-dev':'웹담당','codex':'Codex 자문','gemini':'Gemini 자문'};
 const nRoles = room => (TEAMS.find(T=>T.room===room)||{members:[]}).members.length;
 function takeSeat(room,id,role){ const s=seats[room]||(seats[room]=Array(nRoles(room)).fill(null));
   const r=(TEAMS.find(T=>T.room===room)||{members:[]}).members.indexOf(role);
@@ -248,7 +261,7 @@ function seatPos(room,i){ const r=ROOMS[room]; const sp=Math.min(66,(r.w-50)/Mat
 // 평소에는 명패와 빈 자리만 — 팀원은 부를 때만 생겼다가 일이 끝나면 사라진다
 const phEl={};
 for(const T of TEAMS) T.members.forEach((m,i)=>{ const p=seatPos(T.room,i);
-  const el=$(`<div class="ph" style="left:${p.x-22}px;top:${spriteTop(p.f)}px"><div class="body">${T.emo}</div><span class="plate">${KO[m]||m}</span></div>`);
+  const el=$(`<div class="ph" style="left:${p.x-22}px;top:${spriteTop(p.f)}px"><div class="bub"></div><div class="body">${(T.emos||{})[m]||T.emo}</div><span class="plate">${KO[m]||m}</span></div>`);
   stage.append(el); phEl[T.room+'/'+i]=el; });
 function phSync(room){ const s=seats[room]||[]; for(let i=0;i<nRoles(room);i++){ const el=phEl[room+'/'+i]; if(el) el.classList.toggle('taken', !!s[i]); } }
 function lights(){ for(const k in roomEl) roomEl[k].classList.toggle('lit', (seats[k]||[]).some(Boolean) || bossRoom===k || k==='pi'); }
@@ -256,7 +269,7 @@ function lights(){ for(const k in roomEl) roomEl[k].classList.toggle('lit', (sea
 // 랩장
 const boss = new Sprite('boss','🐧','랩장',{boss:true});
 let bossRoom='boss';
-const BOSS_SPOT = {boss:130, lib:150, server:120, comm:140, lounge:250, pi:200};
+const BOSS_SPOT = {boss:130, lib:150, server:120, comm:140, lounge:250, pi:200, lobby:190};
 function bossTo(room, live){ bossRoom=room; const r=ROOMS[room]; boss.go(r.f, r.x+(BOSS_SPOT[room]||100), live); lights(); }
 boss.place(5, ROOMS.boss.x+130);
 const SNACK=()=>['🍪 과자 먹으며 PI님 답 기다리는 중','🐟 생선 과자 냠냠','🍩 도넛 하나만…','🧁 컵케이크 충전 중'][Math.floor(Math.random()*4)];
@@ -311,9 +324,20 @@ function tool(e, live){
   const [ico, verb, room] = toolInfo(e.tool||'');
   const txt = `${ico} ${verb}${e.target?' '+e.target:''}`;
   if(e.aid){ const s=staff.get(e.aid); if(!s) return; s.seen=Date.now(); if(live) s.sp.say(txt); return; }
+  if(/^(codex|gemini)$/.test(e.target||'')){ consult(e, live); return; }
   if(live){ bossTo(room, true); boss.say(txt); }
   else bossRoom=room;
   if(live || e.tool==='Agent') log(e.ts, `🐧 랩장 — ${esc(txt)} <span style="opacity:.55">(${ROOMS[room].name})</span>`);
+}
+function consult(e, live){   // 객원 자문역(Codex·Gemini)에게 2차 의견
+  const who=e.target, name=who==='codex'?'Codex':'Gemini';
+  log(e.ts, `🤝 랩장 — <b>${name}</b>에게 자문 <span style="opacity:.55">(객원석)</span>`);
+  if(!live){ bossRoom='lobby'; return; }
+  bossTo('lobby', true); boss.say(`🤝 ${name}, 의견 좀 줘요`);
+  const i=GUEST.members.indexOf(who), el=phEl['lobby/'+i]; if(!el) return;
+  el.classList.add('awake'); const b=el.querySelector('.bub');
+  setTimeout(()=>{ b.textContent=who==='codex'?'🧐 다른 관점에서 보면…':'✨ 이런 방법도 있어요'; b.classList.add('on'); }, 1800);
+  clearTimeout(el._t); el._t=setTimeout(()=>{ el.classList.remove('awake'); b.classList.remove('on'); }, 9000);
 }
 function dispatch(e, live){
   if(e.aid) return;  // 팀원이 또 부르는 건 생략
@@ -333,7 +357,16 @@ async function pi(e, live){
   m.style.left=(ROOMS.boss.x+120)+'px'; m.style.top=(FY[5]+20)+'px';
   await sleep(1300); m.style.opacity=0; boss.say('지시 받았습니다! 🫡', 4000); setTimeout(()=>m.remove(),500);
 }
-const HANDLERS = {tool, dispatch, arrive, leave, idle, pi};
+async function report(e, live){
+  log(e.ts, `📨 랩장 → PI: <b>${esc(e.target)}</b> 보고`);
+  if(!live) return;
+  bossTo('pi', true); boss.say(`📨 ${e.target} 올립니다`, 4000);
+}
+function piwork(e, live){
+  log(e.ts, `🧑‍🏫 PI — ${esc(e.target)}`);
+  if(live) piSp.say(e.target, 8500);
+}
+const HANDLERS = {tool, dispatch, arrive, leave, idle, pi, report, piwork};
 function apply(e, live){ try{ HANDLERS[e.kind]?.(e, live); }catch(err){ console.warn(err); } }
 const today = () => { const d=new Date(); return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`; };
 
@@ -352,19 +385,41 @@ const SCRIPT=[
   [2400,D('material-ra-1','material-ra','3주차 강의 슬라이드')],[250,D('material-ra-2','material-ra','모둠 활동지')],
   [250,D('exam-ra','exam-ra','형성평가 퀴즈 10문항')],[250,D('lecture-planning-ra','lecture-planning-ra','주차 목표 정렬')],
   [500,A('m1','material-ra-1')],[500,A('m2','material-ra-2')],[500,A('ex','exam-ra')],[500,A('lp','lecture-planning-ra')],
-  [3500,U('WebSearch','보편적 학습설계 수업 사례')],
+  [3500,U('Bash','gemini')],
   [3000,U('Read','지난 학기 슬라이드','m1')],[700,U('WebSearch','협력학습 활동 예시','m2')],[700,U('Read','학습목표','ex')],[700,U('Read','강의계획서','lp')],
   [3500,U('Write','슬라이드 개요','m1')],[900,U('Write','활동지','m2')],[900,U('Write','퀴즈 초안','ex')],[900,U('Edit','주차별 목표','lp')],
   [3500,L('lp')],[900,L('m2')],[900,L('ex')],[1200,L('m1')],
   [1500,D('teaching-lead','teaching-lead','자료·퀴즈 검수')],[400,A('tl','teaching-lead')],
   [3000,U('Read','슬라이드 개요','tl')],[2000,U('Edit','퀴즈 선택지 길이','tl')],[3000,L('tl')],
-  [1500,U('Bash','python3 build_deck.py')],
+  [1500,U('Bash','codex')],
+  [9000,U('Bash','python3 build_deck.py')],
   [3000,U('Write','수업 공지 초안')],
   [3000,{kind:'idle'}],[9000,null],
 ];
-(async function loop(){
-  for(;;){ for(const [ms,e] of SCRIPT){ await sleep(ms); if(e) apply({...e, ts:T()}, true); } }
-})();
+const SCRIPT2=[   // 같은 시간에 4층에서는 원고 인용검증
+  [7000,D('citation-ra-1','citation-ra','원고 인용 원문 대조 1')],[250,D('citation-ra-2','citation-ra','원고 인용 원문 대조 2')],
+  [250,D('citation-ra-3','citation-ra','원고 인용 원문 대조 3')],[250,D('citation-fit-ra','citation-fit-ra','인용 적정성')],
+  [500,A('c1','citation-ra-1')],[500,A('c2','citation-ra-2')],[500,A('c3','citation-ra-3')],[500,A('cf','citation-fit-ra')],
+  [4000,U('Read','원문 PDF','c1')],[800,U('Grep','Mayer','c2')],[800,U('WebFetch','doi.org','c3')],[800,U('Read','원고.md','cf')],
+  [5000,U('Read','원문 PDF','c3')],[1200,U('Read','원문 PDF','c2')],[1500,U('Write','주장-근거 대조표','cf')],
+  [5000,L('c1')],[1000,L('c2')],[1000,L('c3')],[1500,L('cf')],
+  [1000,D('literature-lead','literature-lead','인용검증 종합')],[400,A('ll','literature-lead')],
+  [3500,U('Write','인용검증 보고서','ll')],[3500,L('ll')],
+  [800,{kind:'report',target:'인용검증 보고서'}],
+  [2500,{kind:'piwork',target:'✍️ 검증 결과 보고 원고 수정 중'}],
+  [9000,{kind:'piwork',target:'✍️ 근거 약한 문장 고치는 중'}],
+];
+const SCRIPT3=[   // 같은 시간에 3층에서는 새 연구과제 IRB 서류
+  [14000,D('proposal-lead','proposal-lead','새 과제 연구 개요 정리')],[250,D('irb-ra','irb-ra','IRB 심의 서류 초안')],
+  [500,A('pl','proposal-lead')],[500,A('ir','irb-ra')],
+  [4000,U('Read','연구계획서','pl')],[1000,U('Read','기관 IRB 양식','ir')],
+  [5000,U('Write','연구 개요','pl')],[2500,U('Write','연구계획서(IRB)','ir')],
+  [5000,L('pl')],[2500,U('Write','설명문·동의서','ir')],[5000,U('Write','PI 확인 질문 목록','ir')],[4000,L('ir')],
+  [1500,{kind:'report',target:'IRB 서류 초안'}],
+  [2500,{kind:'piwork',target:'🔍 IRB 확인 질문 답하는 중'}],
+];
+async function run(S){ for(const [ms,e] of S){ await sleep(ms); if(e) apply({...e, ts:T()}, true); } }
+(async function loop(){ for(;;){ await Promise.all([run(SCRIPT), run(SCRIPT2), run(SCRIPT3)]); } })();
 bossTo('boss', false);
 </script>
 
