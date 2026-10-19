@@ -13,16 +13,16 @@ body{margin:0;background:var(--sky,#bfe6ff);font-family:"Gowun Dodum","Malgun Go
   min-height:100vh;transition:background 2s}
 .wrap{display:flex;gap:16px;padding:16px;align-items:flex-start;flex-wrap:wrap}
 #viewport{flex:1 1 640px;min-width:300px}
-#stage{position:relative;width:1080px;height:676px;transform-origin:0 0}
+#stage{position:relative;width:1144px;height:676px;transform-origin:0 0}
 /* 건물 */
-.roof{position:absolute;left:0;top:0;width:1080px;height:80px}
-.roof .tri{position:absolute;left:60px;right:0;top:44px;height:36px;background:var(--roof);border-radius:10px 10px 0 0}
+.roof{position:absolute;left:0;top:0;width:1144px;height:80px}
+.roof .tri{position:absolute;left:60px;right:62px;top:44px;height:36px;background:var(--roof);border-radius:10px 10px 0 0}
 .sign{font-family:"Jua",sans-serif;position:absolute;left:380px;top:2px;width:400px;height:48px;background:#fff;border:4px solid var(--roof);border-radius:14px;
   display:flex;align-items:center;justify-content:center;gap:12px;font-size:22px;box-shadow:0 4px 0 rgba(0,0,0,.15)}
 .sign small{font-size:12px;opacity:.75}
 .flag{position:absolute;left:300px;top:6px;font-size:30px;animation:sway 3s ease-in-out infinite}
 @keyframes sway{50%{transform:rotate(-8deg) translateY(-2px)}}
-.floor{position:absolute;left:0;width:1080px;height:112px;background:repeating-linear-gradient(0deg,var(--brick) 0 10px,var(--brick2) 10px 11px)}
+.floor{position:absolute;left:0;width:1144px;height:112px;background:repeating-linear-gradient(0deg,var(--brick) 0 10px,var(--brick2) 10px 11px)}
 .flabel{position:absolute;left:3px;top:3px;font-size:10px;color:#fff;background:var(--roof);padding:1px 5px;border-radius:6px;z-index:7}
 .room{position:absolute;top:6px;height:100px;background:linear-gradient(var(--wall),var(--wall2));border:3px solid var(--line);border-radius:8px;overflow:visible;transition:box-shadow 1s}
 .room::after{content:"";position:absolute;left:0;right:0;bottom:0;height:16px;background:var(--floor);border-top:2px solid var(--line);border-radius:0 0 5px 5px}
@@ -38,11 +38,11 @@ body{margin:0;background:var(--sky,#bfe6ff);font-family:"Gowun Dodum","Malgun Go
 .car::before,.car::after{content:"";position:absolute;top:8px;bottom:6px;width:20px;background:#b9a6cf;border:2px solid #5d4b70;transition:transform .35s}
 .car::before{left:2px}.car::after{right:2px}
 .car.open::before{transform:translateX(-16px) scaleX(.2)}.car.open::after{transform:translateX(16px) scaleX(.2)}
-.mini{position:absolute;left:30px;width:30px;height:52px;border:3px solid #ff8fa3;border-radius:8px;background:rgba(255,238,241,.55);z-index:4;opacity:0;transition:opacity .2s}
-.mini::after{content:'랩장 전용';position:absolute;top:-13px;left:-6px;font-size:8px;white-space:nowrap;background:#ff8fa3;color:#fff;border-radius:4px;padding:0 3px}
-.mini.on{opacity:1}
+.shaft.r{left:1082px;background:#e7a3b1;border-right:none;border-left:3px solid #c9788a}
+.mini{position:absolute;left:1090px;width:46px;height:60px;border:3px solid #c9788a;border-radius:8px;background:rgba(255,238,241,.7);z-index:4}
+.mini::after{content:'랩장 전용';position:absolute;top:-13px;left:2px;font-size:8px;white-space:nowrap;background:#ff8fa3;color:#fff;border-radius:4px;padding:0 3px}
 .car .ind{position:absolute;top:-16px;left:8px;font-size:10px;background:#222;color:#7dff9b;padding:0 4px;border-radius:3px}
-.ground{position:absolute;left:0;top:640px;width:1080px;height:36px;background:#9bd17b;border-top:4px solid #78b35a}
+.ground{position:absolute;left:0;top:640px;width:1144px;height:36px;background:#9bd17b;border-top:4px solid #78b35a}
 /* 캐릭터 */
 .sp{position:absolute;width:38px;height:46px;z-index:5;transition:left 1s linear,top 1s ease-in-out,opacity .6s}
 .sp .body{font-size:26px;line-height:30px;text-align:center;filter:drop-shadow(0 2px 0 rgba(0,0,0,.25))}
@@ -154,9 +154,11 @@ for (const f of [5,4,3,2,1]) {
   stage.append(fl);
 }
 stage.append($(`<div class="shaft"></div>`));
+stage.append($(`<div class="shaft r"></div>`));   // 오른쪽: 랩장 전용 리프트 통로 (혼자 자주 오르내려서)
 const car = $(`<div class="car" style="top:${FY[1]+6}px"><span class="ind">1F</span></div>`);
 stage.append(car);
-const mini = $(`<div class="mini"></div>`); stage.append(mini);   // 랩장 전용 미니 리프트 — 줄 안 서고 바로 탄다
+const BOSS_LIFT_X = 1113, miniTop = f => FY[f]+112-62-12;   // spriteTop보다 먼저 쓰이므로 FY로 직접 계산
+const mini = $(`<div class="mini" style="top:${miniTop(5)}px"></div>`); stage.append(mini);   // 랩장 전용 미니 리프트 — 줄 안 서고 바로 탄다
 stage.append($(`<div class="ground"></div>`));
 const roomEl = {};
 for (const [k,r] of Object.entries(ROOMS)) {
@@ -169,7 +171,7 @@ for (const [k,r] of Object.entries(ROOMS)) {
 }
 
 // 화면 크기에 맞춰 축소
-function fit(){ const vw=document.getElementById('viewport').clientWidth; const s=Math.min(1, vw/1080);
+function fit(){ const vw=document.getElementById('viewport').clientWidth; const s=Math.min(1, vw/1144);
   stage.style.transform=`scale(${s})`; document.getElementById('viewport').style.height=(676*s)+'px'; }
 addEventListener('resize', fit); fit();
 
@@ -232,16 +234,14 @@ class Sprite {
     this.target={f,x}; if(this.moving) return; this.moving=true;
     while(this.target){ const t=this.target; this.target=null;
       if(t.f!==this.f){
-        if(this.boss){ await this.walk(ELEV_X+14); await this.slide(t.f); }   // 랩장은 줄 안 서고 전용 봉으로 슝
+        if(this.boss){ await this.walk(BOSS_LIFT_X); await this.slide(t.f); }   // 랩장은 줄 안 서고 전용 봉으로 슝
         else { await this.walk(ELEV_X+48+Math.random()*26); await ride(this,t.f); } }
       await this.walk(t.x); }
     this.moving=false;
   }
-  async slide(f){ const d=Math.abs(this.f-f)*0.2+0.25, y=t=>spriteTop(t)-4;
-    mini.style.transition='opacity .2s'; mini.style.top=y(this.f)+'px'; mini.classList.add('on'); await sleep(220);
-    mini.style.transition=`top ${d}s ease-in-out, opacity .2s`; this.el.style.transition=`top ${d}s ease-in-out`;
-    mini.style.top=y(f)+'px'; this.el.style.top=spriteTop(f)+'px'; await sleep(d*1000); this.f=f;
-    await sleep(120); mini.classList.remove('on'); }
+  async slide(f){ const d=Math.abs(this.f-f)*0.2+0.25;
+    mini.style.transition=`top ${d}s ease-in-out`; this.el.style.transition=`top ${d}s ease-in-out`;
+    mini.style.top=miniTop(f)+'px'; this.el.style.top=spriteTop(f)+'px'; await sleep(d*1000); this.f=f; await sleep(120); }
   say(text, ms=6000){ const b=this.el.querySelector('.bub'); b.textContent=text; b.classList.add('on');
     clearTimeout(this._t); this._t=setTimeout(()=>b.classList.remove('on'), ms); }
   async leave(live=true){ if(live){ this.say('퇴근! 👋',3000); await sleep(900); await this.go(1, ELEV_X); }
