@@ -1,0 +1,357 @@
+<!doctype html><html lang="ko"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SAIL 오피스</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Jua&family=Gowun+Dodum&display=swap">
+<style>
+:root{
+  --ink:#3b2f2a; --wall:#fff6e8; --wall2:#ffeedd; --line:#c9a98a; --floor:#d9b48f;
+  --brick:#e9a77f; --brick2:#df9670; --roof:#7a5c8f; --glass:#bfe6ff; --bub:#ffffff;
+  --panel:#fffaf2; --accent:#ff8fa3; --lit:rgba(255,226,140,.35);
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--sky,#bfe6ff);font-family:"Gowun Dodum","Malgun Gothic","Apple SD Gothic Neo",sans-serif;color:var(--ink);
+  min-height:100vh;transition:background 2s}
+.wrap{display:flex;gap:16px;padding:16px;align-items:flex-start;flex-wrap:wrap}
+#viewport{flex:1 1 640px;min-width:300px}
+#stage{position:relative;width:1080px;height:676px;transform-origin:0 0}
+/* 건물 */
+.roof{position:absolute;left:0;top:0;width:1080px;height:80px}
+.roof .tri{position:absolute;left:60px;right:0;top:44px;height:36px;background:var(--roof);border-radius:10px 10px 0 0}
+.sign{font-family:"Jua",sans-serif;position:absolute;left:380px;top:2px;width:400px;height:48px;background:#fff;border:4px solid var(--roof);border-radius:14px;
+  display:flex;align-items:center;justify-content:center;gap:12px;font-size:22px;box-shadow:0 4px 0 rgba(0,0,0,.15)}
+.sign small{font-size:12px;opacity:.75}
+.flag{position:absolute;left:300px;top:6px;font-size:30px;animation:sway 3s ease-in-out infinite}
+@keyframes sway{50%{transform:rotate(-8deg) translateY(-2px)}}
+.floor{position:absolute;left:0;width:1080px;height:112px;background:repeating-linear-gradient(0deg,var(--brick) 0 10px,var(--brick2) 10px 11px)}
+.flabel{position:absolute;left:3px;top:3px;font-size:10px;color:#fff;background:var(--roof);padding:1px 5px;border-radius:6px;z-index:7}
+.room{position:absolute;top:6px;height:100px;background:linear-gradient(var(--wall),var(--wall2));border:3px solid var(--line);border-radius:8px;overflow:visible;transition:box-shadow 1s}
+.room::after{content:"";position:absolute;left:0;right:0;bottom:0;height:16px;background:var(--floor);border-top:2px solid var(--line);border-radius:0 0 5px 5px}
+.room.lit{box-shadow:inset 0 0 40px var(--lit)}
+.night .room:not(.lit){filter:brightness(.62) saturate(.7)}
+.rname{position:absolute;left:6px;top:4px;font-size:11px;font-weight:bold;z-index:2;white-space:nowrap}
+.rname i{font-style:normal;font-size:9px;opacity:.6;margin-left:4px}
+.win{position:absolute;top:6px;width:30px;height:24px;background:var(--glass);border:2px solid var(--line);border-radius:4px}
+.deco{position:absolute;bottom:14px;font-size:20px;z-index:1;pointer-events:none}
+/* 엘리베이터 */
+.shaft{position:absolute;left:0;top:80px;width:62px;height:560px;background:#8f7aa3;border-right:3px solid #6b5880}
+.car{position:absolute;left:6px;width:50px;height:100px;background:#d7c9e6;border:3px solid #5d4b70;border-radius:6px;z-index:4;transition:top 1s ease-in-out}
+.car::before,.car::after{content:"";position:absolute;top:8px;bottom:6px;width:20px;background:#b9a6cf;border:2px solid #5d4b70;transition:transform .35s}
+.car::before{left:2px}.car::after{right:2px}
+.car.open::before{transform:translateX(-16px) scaleX(.2)}.car.open::after{transform:translateX(16px) scaleX(.2)}
+.car .ind{position:absolute;top:-16px;left:8px;font-size:10px;background:#222;color:#7dff9b;padding:0 4px;border-radius:3px}
+.ground{position:absolute;left:0;top:640px;width:1080px;height:36px;background:#9bd17b;border-top:4px solid #78b35a}
+/* 캐릭터 */
+.sp{position:absolute;width:38px;height:46px;z-index:5;transition:left 1s linear,top 1s ease-in-out,opacity .6s}
+.sp .body{font-size:26px;line-height:30px;text-align:center;filter:drop-shadow(0 2px 0 rgba(0,0,0,.25))}
+.sp.walk .body{animation:bob .32s steps(2) infinite}
+@keyframes bob{50%{transform:translateY(-3px) var(--flip,)}}
+.sp .body{transform:var(--flip,none)}
+.sp .tag{position:absolute;top:30px;left:50%;transform:translateX(-50%);font-size:8px;background:rgba(255,255,255,.85);padding:0 2px;border-radius:4px;white-space:nowrap}
+.sp .crown{position:absolute;top:-8px;left:22px;font-size:11px}
+.sp .bub{position:absolute;bottom:48px;left:-6px;transform:scale(0);transform-origin:bottom left;background:var(--bub);border:2px solid var(--ink);
+  border-radius:10px;padding:2px 7px;font-size:10px;white-space:nowrap;transition:transform .2s;z-index:9;max-width:260px;overflow:hidden;text-overflow:ellipsis}
+.sp .bub::after{content:"";position:absolute;left:18px;bottom:-7px;border:5px solid transparent;border-top-color:var(--ink)}
+.sp .bub.on{transform:scale(1)}
+.sp.boss{z-index:6}.sp.boss .tag{background:var(--accent);color:#fff}
+.mail{position:absolute;font-size:22px;z-index:8;transition:left 1.2s ease-in-out,top 1.2s ease-in-out,opacity .4s}
+/* 패널 */
+aside{flex:0 1 330px;min-width:260px;background:var(--panel);border:3px solid var(--line);border-radius:12px;padding:12px;max-height:calc(100vh - 32px);display:flex;flex-direction:column}
+aside h2{margin:0 0 6px;font-size:18px;font-family:"Jua",sans-serif;font-weight:normal}
+.intro{font-size:12px;line-height:1.6;margin:0 0 8px}
+.chip{display:inline-block;font-size:10px;background:#ffeef1;border:2px solid var(--accent);border-radius:8px;padding:1px 6px}
+@media (max-width:700px){.wrap{padding:16px}aside{flex:1 1 100%;max-height:none}#log{max-height:240px}}
+.stat{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px}
+.stat span{background:#fff;border:2px solid var(--line);border-radius:8px;padding:2px 6px;font-size:11px}
+#log{list-style:none;margin:0;padding:0;overflow:auto;font-size:11px;line-height:1.5;flex:1}
+#log li{padding:3px 0;border-bottom:1px dashed #e6d3bf}
+#log time{opacity:.5;margin-right:4px}
+button{font:inherit;font-size:11px;background:#fff;border:2px solid var(--line);border-radius:8px;padding:3px 8px;cursor:pointer}
+button:hover{background:#ffeef1}
+.legend{font-size:10px;opacity:.75;margin-top:8px;line-height:1.5}
+.off{color:#b4535f;font-size:11px}
+</style>
+<div class="wrap">
+  <div id="viewport"><div id="stage"></div></div>
+  <aside>
+    <h2>⛵ SAIL 오피스</h2>
+    <div class="stat"><span id="s-clock">--:--</span><span id="s-staff">출근 0명</span><span id="s-today">오늘 출근 0회</span></div>
+    <p class="intro">SAIL Lab(제주대 양은별 교수 연구실)은 Claude Code로 운영하는 연구 보조 팀입니다. 랩장(메인 세션)이 일을 나누어 팀원(서브에이전트)을 부르면, 팀원이 엘리베이터로 출근해 자기 팀 자리에서 일하고 끝나면 퇴근합니다.</p>
+    <div style="margin-bottom:8px"><span class="chip">🎬 시연 화면 · 투고 준비 루틴을 자동 반복 재생</span></div>
+    <ul id="log"></ul>
+    <div class="legend">파일을 읽으면 📚자료실, 명령을 돌리면 🖥서버실, 웹·외부 연동은 📡통신실로 갑니다.
+      팀원은 🛗엘리베이터로 출근해 자기 팀 자리에 앉고, 일이 끝나면 퇴근합니다. 쉬는 동안 랩장은 🍪휴게실에서 간식을 먹습니다. PI실은 늘 불이 켜져 있습니다.</div>
+  </aside>
+</div>
+<script>
+// ───────── 건물 배치 ─────────
+const FY = {5:80, 4:192, 3:304, 2:416, 1:528};   // 층 윗변 y
+const ELEV_X = 31;
+const ROOMS = {
+  pi:     {f:5, x:72,  w:250, name:'PI실', div:'양은별 교수', deco:[['🪴',8],['📜',200]]},
+  boss:   {f:5, x:330, w:350, name:'랩장실', div:'메인 세션', deco:[['🗂️',300],['🪴',8]]},
+  lounge: {f:5, x:688, w:384, name:'휴게실', div:'☕', deco:[['🛋️',40],['☕',120],['🧁',160],['🎮',330]]},
+  proof:  {f:4, x:72,  w:190, name:'교정팀', div:'논문작성부', deco:[['✒️',160]]},
+  lit:    {f:4, x:270, w:250, name:'문헌팀', div:'논문작성부', deco:[['📑',222]]},
+  plan:   {f:4, x:528, w:180, name:'기획팀', div:'논문작성부', deco:[['🧭',150]]},
+  mock:   {f:4, x:716, w:180, name:'모의심사팀', div:'논문작성부', deco:[['⚖️',150]]},
+  meth:   {f:4, x:904, w:168, name:'방법론팀', div:'논문작성부', deco:[['📊',138]]},
+  grant:  {f:3, x:72,  w:250, name:'과제기획팀', div:'연구행정부', deco:[['📝',220]]},
+  admin:  {f:3, x:330, w:250, name:'행정팀', div:'연구행정부', deco:[['🧾',220]]},
+  peer:   {f:3, x:588, w:270, name:'외부심사팀', div:'학술심사부', deco:[['🔏',240]]},
+  meet:   {f:3, x:866, w:206, name:'회의실', div:'', deco:[['🪑',40],['🪑',90],['🪑',140]]},
+  ta:     {f:2, x:72,  w:380, name:'TA팀', div:'교육지원부', deco:[['🍎',350]]},
+  lect:   {f:2, x:460, w:240, name:'강의기획팀', div:'교육지원부', deco:[['🗓️',210]]},
+  dev:    {f:2, x:708, w:364, name:'개발팀', div:'개발부', deco:[['🥽',300],['📱',334]]},
+  lobby:  {f:1, x:72,  w:280, name:'로비·객원석', div:'', deco:[['🪴',8],['🛎️',250]]},
+  lib:    {f:1, x:360, w:240, name:'자료실', div:'Read·Grep', deco:[['📚',8],['📚',34],['📚',210]]},
+  server: {f:1, x:608, w:212, name:'서버실', div:'Bash', deco:[['🖥️',8],['🖥️',36],['💾',184]]},
+  comm:   {f:1, x:828, w:244, name:'통신실', div:'Web·MCP', deco:[['📡',8],['🛰️',212]]},
+};
+// 팀 → 방·캐릭터 (LAB.md 조직도 기준)
+const TEAMS = [
+  {room:'proof', emo:'🐿️', members:['proof-ra']},
+  {room:'lit',   emo:'🦉', members:['literature-lead','citation-ra','citation-fit-ra'], lead:'literature-lead'},
+  {room:'plan',  emo:'🦊', members:['strategy-lead','scout-ra'], lead:'strategy-lead'},
+  {room:'mock',  emo:'🐱', members:['review-editor','reviewer-ra'], lead:'review-editor'},
+  {room:'meth',  emo:'🦔', members:['methods-lead','analysis-ra'], lead:'methods-lead'},
+  {room:'grant', emo:'🐰', members:['proposal-lead','irb-ra'], lead:'proposal-lead'},
+  {room:'admin', emo:'🐹', members:['admin-lead','docs-ra'], lead:'admin-lead'},
+  {room:'peer',  emo:'🦝', members:['pr-lead','ms-analyst-ra','litcheck-ra'], lead:'pr-lead'},
+  {room:'ta',    emo:'🐶', members:['teaching-lead','material-ra','exam-ra','grading-ra'], lead:'teaching-lead'},
+  {room:'lect',  emo:'🐼', members:['lecture-planning-ra','cqi-ra']},
+  {room:'dev',   emo:'🐙', members:['dev-lead','unity-dev','apple-dev'], lead:'dev-lead'},
+];
+const GUEST = {room:'lobby', emo:'🐤'};
+const TOOL = {  // 도구 → [아이콘, 동사, 랩장이 가는 방]
+  Read:['📖','읽는 중','lib'], Grep:['🔍','찾는 중','lib'], Glob:['🔍','찾는 중','lib'],
+  Bash:['⚙️','실행 중','server'], PowerShell:['⚙️','실행 중','server'],
+  Edit:['✍️','고치는 중','boss'], Write:['✍️','쓰는 중','boss'], NotebookEdit:['✍️','쓰는 중','boss'],
+  WebSearch:['🌐','검색 중','comm'], WebFetch:['🌐','열람 중','comm'],
+  Skill:['📋','SOP 펼침','boss'], Agent:['📣','호출','boss'], Task:['📣','호출','boss'],
+};
+const toolInfo = t => TOOL[t] || (t.startsWith('mcp__') ? ['📡','연동 중','comm'] : ['🛠️',t,'boss']);
+
+const stage = document.getElementById('stage');
+const $ = (h) => { const d=document.createElement('div'); d.innerHTML=h.trim(); return d.firstChild; };
+const sleep = ms => new Promise(r=>setTimeout(r,ms));
+
+// ───────── 그리기 ─────────
+stage.append($(`<div class="roof"><div class="flag">⛵</div><div class="tri"></div>
+  <div class="sign">SAIL Lab <small>모든 학습자에게 저마다의 항로를</small></div></div>`));
+for (const f of [5,4,3,2,1]) {
+  const fl = $(`<div class="floor" style="top:${FY[f]}px"><span class="flabel">${f}F</span></div>`);
+  stage.append(fl);
+}
+stage.append($(`<div class="shaft"></div>`));
+const car = $(`<div class="car" style="top:${FY[1]+6}px"><span class="ind">1F</span></div>`);
+stage.append(car);
+stage.append($(`<div class="ground"></div>`));
+const roomEl = {};
+for (const [k,r] of Object.entries(ROOMS)) {
+  const el = $(`<div class="room" style="left:${r.x}px;top:${FY[r.f]+6}px;width:${r.w}px">
+    <div class="rname">${r.name}${r.div?`<i>${r.div}</i>`:''}</div></div>`);
+  el.style.top = (FY[r.f]+6)+'px';
+  for (let wx=r.w-44; wx>r.w*0.55; wx-=40) el.append($(`<div class="win" style="left:${wx}px"></div>`));
+  for (const [e,x] of r.deco) el.append($(`<div class="deco" style="left:${x}px">${e}</div>`));
+  stage.append(el); roomEl[k]=el;
+}
+
+// 화면 크기에 맞춰 축소
+function fit(){ const vw=document.getElementById('viewport').clientWidth; const s=Math.min(1, vw/1080);
+  stage.style.transform=`scale(${s})`; document.getElementById('viewport').style.height=(676*s)+'px'; }
+addEventListener('resize', fit); fit();
+
+// 하늘 색 (시간대)
+function sky(){ const h=new Date().getHours(); const night = h<6||h>=19;
+  const c = night?'#2a2f55': h<8?'#ffc9a8': h>=17?'#ffb38a':'#bfe6ff';
+  document.body.style.setProperty('--sky',c); document.body.classList.toggle('night',night);
+  document.documentElement.style.setProperty('--glass', night?'#ffe08a':'#bfe6ff');
+  document.getElementById('s-clock').textContent = new Date().toTimeString().slice(0,5); }
+sky(); setInterval(sky, 30000);
+
+// ───────── 엘리베이터 ─────────
+let carFloor = 1, liftQ = Promise.resolve();
+function moveCar(f){ return new Promise(async res=>{
+  if (carFloor===f) return res();
+  const d = Math.abs(carFloor-f)*0.3+0.25; car.style.transition=`top ${d}s ease-in-out`;
+  car.style.top=(FY[f]+6)+'px'; await sleep(d*1000); carFloor=f; car.querySelector('.ind').textContent=f+'F'; res(); });}
+function ride(sp, to){
+  const job = liftQ.then(async ()=>{
+    await moveCar(sp.f); car.classList.add('open'); await sleep(220);
+    if(Math.abs(sp.x-ELEV_X)>2) await sp.walk(ELEV_X);
+    sp.el.style.opacity=.85; car.classList.remove('open'); await sleep(200);
+    const d = Math.abs(sp.f-to)*0.3+0.25;
+    sp.el.style.transition=`top ${d}s ease-in-out, opacity .6s`; car.style.transition=`top ${d}s ease-in-out`;
+    sp.el.style.top=spriteTop(to)+'px'; car.style.top=(FY[to]+6)+'px';
+    await sleep(d*1000); carFloor=to; sp.f=to; car.querySelector('.ind').textContent=to+'F';
+    car.classList.add('open'); sp.el.style.opacity=1; await sp.walk(ELEV_X+50); car.classList.remove('open');
+  });
+  liftQ = job.catch(()=>{}); return job;
+}
+const spriteTop = f => FY[f]+112-62;
+
+// ───────── 캐릭터 ─────────
+class Sprite {
+  constructor(id, emo, label, opts={}){
+    this.id=id; this.f=1; this.x=ELEV_X; this.target=null; this.moving=false;
+    this.boss=!!opts.boss;
+    this.el=$(`<div class="sp${opts.boss?' boss':''}"><div class="bub"></div><div class="body">${emo}</div>
+      <div class="tag">${label}</div>${opts.lead?'<span class="crown">👑</span>':''}</div>`);
+    stage.append(this.el); this.place(1, ELEV_X);
+  }
+  place(f,x){ this.f=f; this.x=x; this.el.style.transition='none'; this.el.style.left=(x-19)+'px'; this.el.style.top=spriteTop(f)+'px';
+    void this.el.offsetWidth; this.el.style.transition=''; }
+  async walk(x){ const dist=Math.abs(x-this.x); if(dist<2) return;
+    const d=Math.min(2.2, dist/260+0.25);
+    this.el.style.setProperty('--flip', x<this.x?'scaleX(-1)':'none');
+    this.el.style.transition=`left ${d}s linear, top 1s, opacity .6s`; this.el.classList.add('walk');
+    this.el.style.left=(x-19)+'px'; this.x=x; await sleep(d*1000); this.el.classList.remove('walk'); }
+  async go(f,x,live=true){
+    if(!live){ this.place(f,x); return; }
+    this.target={f,x}; if(this.moving) return; this.moving=true;
+    while(this.target){ const t=this.target; this.target=null;
+      if(t.f!==this.f){
+        if(this.boss){ await this.walk(ELEV_X+6); await this.slide(t.f); }   // 랩장은 줄 안 서고 전용 봉으로 슝
+        else { await this.walk(ELEV_X+48+Math.random()*26); await ride(this,t.f); } }
+      await this.walk(t.x); }
+    this.moving=false;
+  }
+  async slide(f){ const d=Math.abs(this.f-f)*0.18+0.2; this.el.style.transition=`top ${d}s ease-in-out`;
+    this.el.style.top=spriteTop(f)+'px'; await sleep(d*1000); this.f=f; }
+  say(text, ms=6000){ const b=this.el.querySelector('.bub'); b.textContent=text; b.classList.add('on');
+    clearTimeout(this._t); this._t=setTimeout(()=>b.classList.remove('on'), ms); }
+  async leave(live=true){ if(live){ this.say('퇴근! 👋',3000); await sleep(900); await this.go(1, ELEV_X); }
+    this.el.style.opacity=0; await sleep(live?600:0); this.el.remove(); }
+}
+
+// 자리 배정
+const seats = {}; // room → [id|null]
+function takeSeat(room,id){ const s=seats[room]||(seats[room]=[]); let i=s.indexOf(null); if(i<0){ i=s.length; s.push(id);} else s[i]=id; return i; }
+function freeSeat(room,id){ const s=seats[room]||[]; const i=s.indexOf(id); if(i>=0) s[i]=null; }
+function seatPos(room,i){ const r=ROOMS[room]; const per=Math.max(1,Math.floor((r.w-40)/66));
+  return {f:r.f, x:r.x+40+(i%per)*66+(Math.floor(i/per)%2)*33}; }
+function lights(){ for(const k in roomEl) roomEl[k].classList.toggle('lit', (seats[k]||[]).some(Boolean) || bossRoom===k || k==='pi'); }
+
+// 랩장
+const boss = new Sprite('boss','🐧','랩장',{boss:true});
+let bossRoom='boss';
+const BOSS_SPOT = {boss:130, lib:150, server:120, comm:140, lounge:250, pi:200};
+function bossTo(room, live){ bossRoom=room; const r=ROOMS[room]; boss.go(r.f, r.x+(BOSS_SPOT[room]||100), live); lights(); }
+boss.place(5, ROOMS.boss.x+130);
+const SNACK=()=>['🍪 과자 먹으며 PI님 답 기다리는 중','🐟 생선 과자 냠냠','🍩 도넛 하나만…','🧁 컵케이크 충전 중'][Math.floor(Math.random()*4)];
+
+// PI — 매일 출근해 있는 부지런한 교수님
+const piSp = new Sprite('pi','🧑‍🏫','PI 양은별',{boss:true});
+piSp.el.querySelector('.tag').style.background='#7a5c8f';
+piSp.place(5, ROOMS.pi.x+120);
+const PI_WORK=['✍️ 논문 쓰는 중','📚 다음 주 수업 준비 중','📝 학생 과제 피드백 중','🔍 심사 원고 검토 중','💡 새 연구 구상 중','📊 데이터 들여다보는 중'];
+let piIdx=0; setInterval(()=>{ piSp.say(PI_WORK[piIdx++%PI_WORK.length], 7000); }, 11000);
+setTimeout(()=>piSp.say(PI_WORK[0],7000), 1500);
+
+// ───────── 이벤트 처리 ─────────
+const staff = new Map();   // aid → {sp, team, room, seen}
+const pending = [];        // 호출됐지만 아직 도착 안 한 팀원 {type,name,desc}
+let todayCount = 0;
+const norm = s => String(s||'').replace(/^oh-my-claudecode:/,'').replace(/-\d+$/,'');
+function teamOf(type){ const t=norm(type); return TEAMS.find(T=>T.members.includes(t)) || GUEST; }
+function hhmm(ts){ return (ts||'').slice(11,16); }
+const logEl = document.getElementById('log');
+function log(ts, html){ const li=document.createElement('li'); li.innerHTML=`<time>${hhmm(ts)}</time>${html}`; logEl.prepend(li);
+  while(logEl.children.length>80) logEl.lastChild.remove(); }
+function esc(s){ return String(s||'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
+function counters(){ document.getElementById('s-staff').textContent=`출근 ${staff.size}명`;
+  document.getElementById('s-today').textContent=`오늘 출근 ${todayCount}회`; }
+
+function arrive(e, live){
+  if(!e.aid || !e.atype) return;                        // 이름 없는 내부 헬퍼는 생략
+  if(staff.has(e.aid)) return;
+  let pi = pending.findIndex(p=>p.name && p.name===e.atype);
+  if(pi<0) pi = pending.findIndex(p=>norm(p.type)===norm(e.atype));
+  const p = pi>=0 ? pending.splice(pi,1)[0] : null;
+  const type = p ? p.type : e.atype;
+  const team = teamOf(type); const label = e.atype.replace(/^oh-my-claudecode:/,'');
+  const sp = new Sprite(e.aid, team.emo, label, {lead: team.lead===norm(type)});
+  const seat = takeSeat(team.room, e.aid); const pos = seatPos(team.room, seat);
+  staff.set(e.aid, {sp, room:team.room, seen:Date.parse(e.ts.replace(' ','T'))||Date.now(), label});
+  if(e.ts.slice(0,10)===today()) todayCount++;
+  if(live){ sp.say(p&&p.desc ? `출근! ${p.desc}` : '출근했습니다!'); sp.go(pos.f,pos.x); }
+  else sp.place(pos.f,pos.x);
+  lights(); counters();
+  log(e.ts, `🛗 ${team.emo} <b>${esc(label)}</b> 출근 → ${ROOMS[team.room].name}${p&&p.desc?` · ${esc(p.desc)}`:''}`);
+}
+function leave(e, live){
+  const s = staff.get(e.aid); if(!s) return;
+  staff.delete(e.aid); freeSeat(s.room, e.aid); s.sp.leave(live); lights(); counters();
+  log(e.ts, `👋 <b>${esc(s.label)}</b> 퇴근`);
+}
+function tool(e, live){
+  const [ico, verb, room] = toolInfo(e.tool||'');
+  const txt = `${ico} ${verb}${e.target?' '+e.target:''}`;
+  if(e.aid){ const s=staff.get(e.aid); if(!s) return; s.seen=Date.now(); if(live) s.sp.say(txt); return; }
+  if(live){ bossTo(room, true); boss.say(txt); }
+  else bossRoom=room;
+  if(live || e.tool==='Agent') log(e.ts, `🐧 랩장 — ${esc(txt)} <span style="opacity:.55">(${ROOMS[room].name})</span>`);
+}
+function dispatch(e, live){
+  if(e.aid) return;  // 팀원이 또 부르는 건 생략
+  pending.push({type:e.type, name:e.name, desc:e.target});
+  if(pending.length>30) pending.shift();
+  if(live){ bossTo('boss', true); boss.say(`📣 ${e.name||norm(e.type)} 호출!`); }
+  log(e.ts, `📣 랩장이 <b>${esc(e.name||e.type)}</b> 호출 · ${esc(e.target)}`);
+}
+function idle(e, live){ if(e.aid) return; if(live){ bossTo('lounge', true); boss.say(SNACK(), 8000); } else bossRoom='lounge';
+  log(e.ts, '🍪 랩장 간식 시간 — 보고 마침'); }
+async function pi(e, live){
+  if(!live){ bossRoom='boss'; return; }
+  log(e.ts, '💌 PI 지시 도착');
+  piSp.say('💌 지시 보냄!',3000);
+  const m=$(`<div class="mail" style="left:${ROOMS.pi.x+180}px;top:${FY[5]+40}px">💌</div>`); stage.append(m);
+  bossTo('boss', true); await sleep(50);
+  m.style.left=(ROOMS.boss.x+120)+'px'; m.style.top=(FY[5]+20)+'px';
+  await sleep(1300); m.style.opacity=0; boss.say('지시 받았습니다! 🫡', 4000); setTimeout(()=>m.remove(),500);
+}
+const HANDLERS = {tool, dispatch, arrive, leave, idle, pi};
+function apply(e, live){ try{ HANDLERS[e.kind]?.(e, live); }catch(err){ console.warn(err); } }
+const today = () => { const d=new Date(); return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`; };
+
+// 오래 소식 없는 팀원은 조용히 퇴근 처리 (세션이 꺼져 Stop 훅이 안 온 경우)
+setInterval(()=>{ const now=Date.now(); for(const [id,s] of staff) if(now-s.seen>45*60e3) leave({aid:id, ts:new Date(now-new Date().getTimezoneOffset()*60e3).toISOString().replace('T',' ')}, true); }, 60e3);
+
+let demoOn=false;
+
+// ───────── 시연 모드 ─────────
+const T=()=>{ const d=new Date(Date.now()-new Date().getTimezoneOffset()*60e3); return d.toISOString().replace('T',' ').slice(0,19); };
+const D=(n,t,x)=>({kind:'dispatch',type:t,name:n,target:x}), A=(id,n)=>({kind:'arrive',aid:id,atype:n}), L=id=>({kind:'leave',aid:id});
+const U=(tool,target,aid)=>({kind:'tool',tool,target,...(aid?{aid}:{})});
+const SCRIPT=[
+  [1500,{kind:'pi'}],
+  [2200,U('Read','research-map.md')],[2600,U('Read','writing-style.md')],
+  [2600,U('Bash','python3 check_sources.py')],
+  [2600,D('citation-ra-1','citation-ra','인용 원문 대조 1')],[250,D('citation-ra-2','citation-ra','인용 원문 대조 2')],
+  [250,D('citation-ra-3','citation-ra','인용 원문 대조 3')],[250,D('citation-fit-ra','citation-fit-ra','인용 적정성')],
+  [500,A('c1','citation-ra-1')],[500,A('c2','citation-ra-2')],[500,A('c3','citation-ra-3')],[500,A('cf','citation-fit-ra')],
+  [3500,U('WebSearch','Mayer 2009 multimedia')],
+  [3000,U('Read','원문 PDF','c1')],[700,U('Grep','Sweller','c2')],[700,U('WebFetch','doi.org','c3')],[700,U('Read','원고.md','cf')],
+  [4000,U('Read','원문 PDF','c3')],[900,U('Read','원문 PDF','c2')],
+  [3000,L('c1')],[900,L('c2')],[900,L('c3')],[1500,L('cf')],
+  [1500,D('literature-lead','literature-lead','인용검증 종합')],[400,A('ll','literature-lead')],
+  [3000,U('Write','인용검증 보고서','ll')],[3500,L('ll')],
+  [1500,U('Edit','원고.md')],
+  [2600,D('reviewer-ra-1','reviewer-ra','모의심사 · 방법론')],[250,D('reviewer-ra-2','reviewer-ra','모의심사 · 이론')],[250,D('reviewer-ra-3','reviewer-ra','모의심사 · 독자')],
+  [500,A('r1','reviewer-ra-1')],[500,A('r2','reviewer-ra-2')],[500,A('r3','reviewer-ra-3')],
+  [3500,U('Read','원고.md','r1')],[700,U('Read','원고.md','r2')],[700,U('WebSearch','저널 심사 기준','r3')],
+  [3500,L('r1')],[900,L('r2')],[900,L('r3')],
+  [800,D('review-editor','review-editor','심사의견 종합')],[400,A('re','review-editor')],
+  [3000,U('Write','심사의견서','re')],[3000,L('re')],
+  [1500,D('proof-ra','proof-ra','AI 문체 교정')],[400,A('pr','proof-ra')],
+  [3000,U('Edit','원고.md','pr')],[3200,L('pr')],
+  [1500,U('Bash','python3 check_manuscript.py')],
+  [3000,{kind:'idle'}],[9000,null],
+];
+(async function loop(){
+  for(;;){ for(const [ms,e] of SCRIPT){ await sleep(ms); if(e) apply({...e, ts:T()}, true); } }
+})();
+bossTo('boss', false);
+</script>
+
+</html>
