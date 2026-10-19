@@ -53,6 +53,10 @@ body{margin:0;background:var(--sky,#bfe6ff);font-family:"Gowun Dodum","Malgun Go
 .sp .bub::after{content:"";position:absolute;left:18px;bottom:-7px;border:5px solid transparent;border-top-color:var(--ink)}
 .sp .bub.on{transform:scale(1)}
 .sp.boss{z-index:6}.sp.boss .tag{background:var(--accent);color:#fff}
+.ph{position:absolute;width:44px;height:46px;z-index:2;text-align:center;pointer-events:none;transition:opacity .4s}
+.ph .body{font-size:24px;line-height:30px;opacity:.22;filter:grayscale(1)}
+.ph .plate{font-size:8px;background:#f3e3cf;border:1px solid var(--line);border-radius:3px;padding:0 2px;white-space:nowrap;display:inline-block}
+.ph.taken{opacity:0}
 .mail{position:absolute;font-size:22px;z-index:8;transition:left 1.2s ease-in-out,top 1.2s ease-in-out,opacity .4s}
 /* 패널 */
 aside{flex:0 1 330px;min-width:260px;background:var(--panel);border:3px solid var(--line);border-radius:12px;padding:12px;max-height:calc(100vh - 32px);display:flex;flex-direction:column}
@@ -226,10 +230,27 @@ class Sprite {
 
 // 자리 배정
 const seats = {}; // room → [id|null]
-function takeSeat(room,id){ const s=seats[room]||(seats[room]=[]); let i=s.indexOf(null); if(i<0){ i=s.length; s.push(id);} else s[i]=id; return i; }
-function freeSeat(room,id){ const s=seats[room]||[]; const i=s.indexOf(id); if(i>=0) s[i]=null; }
-function seatPos(room,i){ const r=ROOMS[room]; const per=Math.max(1,Math.floor((r.w-40)/66));
-  return {f:r.f, x:r.x+40+(i%per)*66+(Math.floor(i/per)%2)*33}; }
+const KO={'proof-ra':'교정RA','literature-lead':'문헌팀장','citation-ra':'검증RA','citation-fit-ra':'적정성RA',
+  'strategy-lead':'기획팀장','scout-ra':'스카우트RA','review-editor':'편집장','reviewer-ra':'심사위원',
+  'methods-lead':'방법론팀장','analysis-ra':'분석RA','proposal-lead':'과제기획팀장','irb-ra':'IRB담당',
+  'admin-lead':'행정팀장','docs-ra':'서류RA','pr-lead':'외부심사팀장','ms-analyst-ra':'원고분석RA','litcheck-ra':'문헌확인RA',
+  'teaching-lead':'TA팀장','material-ra':'자료RA','exam-ra':'출제RA','grading-ra':'채점RA',
+  'lecture-planning-ra':'강의기획','cqi-ra':'CQI담당','dev-lead':'개발팀장','unity-dev':'Unity','apple-dev':'Apple'};
+const nRoles = room => (TEAMS.find(T=>T.room===room)||{members:[]}).members.length;
+function takeSeat(room,id,role){ const s=seats[room]||(seats[room]=Array(nRoles(room)).fill(null));
+  const r=(TEAMS.find(T=>T.room===room)||{members:[]}).members.indexOf(role);
+  if(r>=0 && !s[r]){ s[r]=id; phSync(room); return r; }
+  let i=s.indexOf(null, nRoles(room)); if(i<0){ i=s.length; s.push(id);} else s[i]=id; return i; }
+function freeSeat(room,id){ const s=seats[room]||[]; const i=s.indexOf(id); if(i>=0) s[i]=null; phSync(room); }
+function seatPos(room,i){ const r=ROOMS[room]; const sp=Math.min(66,(r.w-50)/Math.max(1,nRoles(room)));
+  const per=Math.max(1,Math.floor((r.w-40)/sp));
+  return {f:r.f, x:r.x+36+(i%per)*sp+(Math.floor(i/per)%2)*sp/2}; }
+// 평소에는 명패와 빈 자리만 — 팀원은 부를 때만 생겼다가 일이 끝나면 사라진다
+const phEl={};
+for(const T of TEAMS) T.members.forEach((m,i)=>{ const p=seatPos(T.room,i);
+  const el=$(`<div class="ph" style="left:${p.x-22}px;top:${spriteTop(p.f)}px"><div class="body">${T.emo}</div><span class="plate">${KO[m]||m}</span></div>`);
+  stage.append(el); phEl[T.room+'/'+i]=el; });
+function phSync(room){ const s=seats[room]||[]; for(let i=0;i<nRoles(room);i++){ const el=phEl[room+'/'+i]; if(el) el.classList.toggle('taken', !!s[i]); } }
 function lights(){ for(const k in roomEl) roomEl[k].classList.toggle('lit', (seats[k]||[]).some(Boolean) || bossRoom===k || k==='pi'); }
 
 // 랩장
@@ -269,9 +290,11 @@ function arrive(e, live){
   if(pi<0) pi = pending.findIndex(p=>norm(p.type)===norm(e.atype));
   const p = pi>=0 ? pending.splice(pi,1)[0] : null;
   const type = p ? p.type : e.atype;
-  const team = teamOf(type); const label = e.atype.replace(/^oh-my-claudecode:/,'');
+  const team = teamOf(type); const num=(e.atype.match(/-(\d+)$/)||[])[1];
+  const label = KO[norm(type)] ? KO[norm(type)]+(num?'-'+num:'') : e.atype.replace(/^oh-my-claudecode:/,'');
   const sp = new Sprite(e.aid, team.emo, label, {lead: team.lead===norm(type)});
-  const seat = takeSeat(team.room, e.aid); const pos = seatPos(team.room, seat);
+  const seat = takeSeat(team.room, e.aid, norm(type)); const pos = seatPos(team.room, seat);
+  if(seat%2) sp.el.querySelector('.bub').style.bottom='70px';   // 옆자리 말풍선과 겹치지 않게 높이를 엇갈린다
   staff.set(e.aid, {sp, room:team.room, seen:Date.parse(e.ts.replace(' ','T'))||Date.now(), label});
   if(e.ts.slice(0,10)===today()) todayCount++;
   if(live){ sp.say(p&&p.desc ? `출근! ${p.desc}` : '출근했습니다!'); sp.go(pos.f,pos.x); }
